@@ -116,7 +116,7 @@ class PostsFormsTests(TestCase):
         self.assertEqual(edited_post.text, form_data['text'])
         self.assertEqual(edited_post.author, self.post.author)
         self.assertEqual(edited_post.group.id, form_data['group'])
-        self.assertEqual(edited_post.image.read(), form_data['image'].read())
+        self.assertEqual(edited_post.image, 'posts/small.gif')
 
     def test_post_create_edit_pages_show_correct_context(self):
         urls = [
