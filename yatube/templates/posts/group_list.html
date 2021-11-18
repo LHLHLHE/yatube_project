@@ -2,23 +2,28 @@
 {% block title %} 
   Записи сообщества {{ group.title }} 
 {% endblock %}
+{% load thumbnail %}
 {% block content %}
   <h1>{{group.title}}</h1>
   <p>
      {{ group.description | linebreaks }}
   </p>
-  {% for post in posts %}
+  {% for post in page_obj %}
     <ul>
       <li>
-        Автор: {{ post.author.get_full_name }}
+        <a href="{% url 'posts:profile' post.author.username %}">@{{ post.author.username }}</a> 
       </li>
       <li>
         Дата публикации: {{ post.pub_date }}
       </li>
-    </ul>      
+    </ul>
+    {% thumbnail post.image "960x339" crop="center" upscale=True as im %}
+      <img class="card-img my-2" src="{{ im.url }}">
+    {% endthumbnail %}     
     <p>
       {{ post.text | linebreaks }}
     </p>
     {% if not forloop.last %}<hr>{% endif %}
   {% endfor %} 
+  {% include 'posts/includes/paginator.html' %}
 {% endblock %}
