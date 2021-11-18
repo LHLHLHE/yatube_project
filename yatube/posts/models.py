@@ -3,6 +3,8 @@ import textwrap
 from django.contrib.auth import get_user_model
 from django.db import models
 
+from core.models import CreateModel
+
 User = get_user_model()
 
 
@@ -23,14 +25,10 @@ class Group(models.Model):
         return f'{self.title}'
 
 
-class Post(models.Model):
+class Post(CreateModel):
     text = models.TextField(
         verbose_name='Текст',
         help_text='Введите текст поста'
-    )
-    pub_date = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='Дата публикации'
     )
     author = models.ForeignKey(
         User,
@@ -67,7 +65,7 @@ class Post(models.Model):
         )
 
 
-class Comment(models.Model):
+class Comment(CreateModel):
     post = models.ForeignKey(
         Post,
         on_delete=models.CASCADE,
@@ -84,7 +82,15 @@ class Comment(models.Model):
         verbose_name='Комментарий',
         help_text='Напишите свой комментарий здесь'
     )
-    created = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='Дата публикации'
-    )
+
+    class Meta:
+        ordering = ('-pub_date',)
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
+
+    def __str__(self):
+        return (
+            f'{textwrap.shorten(self.text, width=15)}, '
+            f'{self.pub_date}, '
+            f'{self.author.username}, '
+        )
