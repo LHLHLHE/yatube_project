@@ -1,7 +1,8 @@
+from django.core.cache import cache
 from django.test import Client, TestCase
 from django.urls.base import reverse
 
-from posts.models import Group, Post, User
+from posts.models import Follow, Group, Post, User
 
 SLUG = 'test-slug'
 TEXT = 'Тестовый текст'
@@ -11,12 +12,22 @@ USER = 'Name'
 AUTHOR = 'V'
 TITLE = 'Тестовое название'
 DESCRIPTION = 'Тестовое описание'
+NEW_USER = 'NewUser'
 
 INDEX_URL = reverse('posts:index')
 CREATE_POST_URL = reverse('posts:post_create')
-PROFILE_URL = reverse('posts:profile', kwargs={'username': USER})
+PROFILE_URL = reverse('posts:profile', kwargs={'username': AUTHOR})
 GROUP_URL = reverse('posts:group_list', kwargs={'slug': SLUG})
 LOGIN_URL = reverse('users:login')
+FOLLOW_INDEX_URL = reverse('posts:follow_index')
+PROFILE_FOLLOW_URL = reverse(
+    'posts:profile_follow',
+    kwargs={'username': AUTHOR}
+)
+PROFILE_UNFOLLOW_URL = reverse(
+    'posts:profile_unfollow',
+    kwargs={'username': AUTHOR}
+)
 
 
 class URLTests(TestCase):
@@ -26,6 +37,7 @@ class URLTests(TestCase):
         super().setUpClass()
         cls.user = User.objects.create_user(username=USER)
         cls.author_post = User.objects.create_user(username=AUTHOR)
+        cls.new_user = User.objects.create_user(username=NEW_USER)
         cls.post = Post.objects.create(
             text=TEXT,
             author=cls.author_post,
@@ -36,28 +48,28 @@ class URLTests(TestCase):
         cls.POST_DETAIL_URL = reverse(
             'posts:post_detail',
             kwargs={'post_id': cls.post.id})
-        cls.COMMENT_URL = reverse(
-            'posts:add_comment',
-            kwargs={'post_id': cls.post.id}
-        )
         Group.objects.create(
             title=TITLE,
             slug=SLUG,
             description=DESCRIPTION
         )
+        cls.guest = Client()
+        cls.another = Client()
+        cls.author = Client()
+        cls.new_client = Client()
+        cls.another.force_login(cls.user)
+        cls.author.force_login(cls.author_post)
+        cls.new_client.force_login(cls.new_user)
 
     def setUp(self):
-        self.guest = Client()
-        self.another = Client()
-        self.author = Client()
-        self.another.force_login(self.user)
-        self.author.force_login(self.author_post)
+        cache.clear()
 
     def test_pages_urls_exist_at_desired_location_posts(self):
+        Follow.objects.create(user=self.user, author=self.author_post)
         cases = [
             [INDEX_URL, self.guest, 200],
             [GROUP_URL, self.guest, 200],
-            [PROFILE_URL, self.guest, 200],
+            [PROFILE_URL, self.another, 200],
             [self.POST_DETAIL_URL, self.guest, 200],
             [CREATE_POST_URL, self.another, 200],
             [self.POST_EDIT_URL, self.author, 200],
@@ -65,7 +77,12 @@ class URLTests(TestCase):
             [CREATE_POST_URL, self.guest, 302],
             [self.POST_EDIT_URL, self.another, 302],
             [self.POST_EDIT_URL, self.guest, 302],
-            [self.COMMENT_URL, self.guest, 302],
+            [FOLLOW_INDEX_URL, self.another, 200],
+            [FOLLOW_INDEX_URL, self.guest, 302],
+            [PROFILE_FOLLOW_URL, self.new_client, 302],
+            [PROFILE_FOLLOW_URL, self.guest, 302],
+            [PROFILE_UNFOLLOW_URL, self.another, 302],
+            [PROFILE_UNFOLLOW_URL, self.guest, 302],
         ]
         for url, client, code in cases:
             with self.subTest(url=url, client=client):
@@ -81,7 +98,19 @@ class URLTests(TestCase):
                 LOGIN_URL + '?next=' + self.POST_EDIT_URL],
             [self.POST_EDIT_URL,
                 self.another,
-                self.POST_DETAIL_URL]
+                self.POST_DETAIL_URL],
+            [PROFILE_FOLLOW_URL,
+                self.new_client,
+                PROFILE_URL],
+            [PROFILE_FOLLOW_URL,
+                self.guest,
+                LOGIN_URL + '?next=' + PROFILE_FOLLOW_URL],
+            [PROFILE_FOLLOW_URL,
+                self.another,
+                PROFILE_URL],
+            [PROFILE_UNFOLLOW_URL,
+                self.guest,
+                LOGIN_URL + '?next=' + PROFILE_UNFOLLOW_URL],
         ]
         for url, client, redirect_url in cases:
             with self.subTest(url=url, client=client):
@@ -95,7 +124,8 @@ class URLTests(TestCase):
             PROFILE_URL: 'posts/profile.html',
             self.POST_DETAIL_URL: 'posts/post_detail.html',
             CREATE_POST_URL: 'posts/create_post.html',
-            self.POST_EDIT_URL: 'posts/create_post.html'
+            self.POST_EDIT_URL: 'posts/create_post.html',
+            FOLLOW_INDEX_URL: 'posts/follow.html'
         }
         for adress, template in templates_url_names.items():
             with self.subTest(adress=adress):
