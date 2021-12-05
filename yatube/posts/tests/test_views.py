@@ -175,7 +175,7 @@ class PostsViewsTests(TestCase):
 
     def test_unfollow(self):
         Follow.objects.create(user=self.follower, author=self.user)
-        response = self.follower_client.post(
+        response = self.follower_client.get(
             PROFILE_UNFOLLOW_URL,
             follow=True
         )
