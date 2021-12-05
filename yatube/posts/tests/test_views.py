@@ -165,7 +165,7 @@ class PostsViewsTests(TestCase):
             self.not_follower_client.get(FOLLOW_URL).context['page_obj'])
 
     def test_follow(self):
-        response = self.follower_client.post(
+        response = self.follower_client.get(
             PROFILE_FOLLOW_URL,
             follow=True
         )
