@@ -1,4 +1,4 @@
-Django==2.2.24
+Django==2.2.26
 mixer==7.1.2
 Pillow==9.0.0
 pytest==6.2.4
