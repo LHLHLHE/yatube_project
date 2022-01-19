@@ -4,7 +4,7 @@ The project is a social network for bloggers.
 
 ### Technologies
 Python 3.7
-Django 2.2.19
+Django 2.2.26
 
 ### Launching a project in dev mode
 - Install and activate the virtual environment
