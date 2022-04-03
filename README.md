@@ -24,6 +24,11 @@ requests==2.26.0
 six==1.16.0
 sorl-thumbnail==12.7.0
 ```
+
+### Technologies
+- Python 3.9
+- Django 2.2.16
+
 ### Authors
 Лев Халяпин
 
