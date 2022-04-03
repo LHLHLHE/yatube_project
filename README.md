@@ -2,10 +2,6 @@
 ## Description
 The project is a social network for bloggers.
 
-### Technologies
-Python 3.7
-Django 2.2.19
-
 ### Launching a project in dev mode
 - Install and activate the virtual environment
 - Install dependencies from the file requirements.txt
@@ -16,7 +12,21 @@ Django 2.2.19
     ```
     python manage.py runserver
     ```
-    
+### Requirements
+```
+Django==2.2.26
+django-debug-toolbar==2.2.1
+mixer==7.1.2
+Pillow==9.0.0
+requests==2.26.0
+six==1.16.0
+sorl-thumbnail==12.7.0
+```
+
+### Technologies
+- Python 3.9
+- Django 2.2.26
+
 ### Authors
 Лев Халяпин
 
