@@ -8,6 +8,10 @@ The project is a social network for bloggers.
     ```
     pip install -r requirements.txt
     ``` 
+- Migrate:
+    ```
+    python manage.py migrate
+    ```
 - In the file folder manage.py run the command:
     ```
     python manage.py runserver
